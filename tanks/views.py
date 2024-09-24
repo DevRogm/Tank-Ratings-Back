@@ -11,3 +11,6 @@ class TankListApiView(ListAPIView):
     serializer_class = TankSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['nation', 'name', 'tier', 'type', 'is_premium']
+
+
+#TODO: dodać tutaj pole z AvgRating i z listą komentarzy

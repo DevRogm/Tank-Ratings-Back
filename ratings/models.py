@@ -18,11 +18,14 @@ class Comment(models.Model):
         verbose_name = "Komentarz"
         verbose_name_plural = "Komentarze"
 
+    def __str__(self):
+        return f"{self.text[:20]}..."
+
 
 class Rating(models.Model):
     author = models.ForeignKey(User, verbose_name="Autor oceny", on_delete=models.CASCADE,
                                   related_name="rating_author")
-    comment = models.ForeignKey(Comment, verbose_name="Komentarz", on_delete=models.CASCADE, null=True, blank=True,
+    comment = models.OneToOneField(Comment, verbose_name="Komentarz", on_delete=models.CASCADE, null=True, blank=True,
                                    related_name="rating_comment")
     tank = models.ForeignKey(Tank, verbose_name="Czołg", on_delete=models.CASCADE, related_name="rating_tank")
     gun_rating = models.PositiveSmallIntegerField(verbose_name="Ocena działa", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
@@ -33,6 +36,7 @@ class Rating(models.Model):
     overall_rating = models.PositiveSmallIntegerField(verbose_name="Ocena ogólna", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
 
     class Meta:
+        unique_together = ('author', 'tank')
         verbose_name = "Ocena czołgu"
         verbose_name_plural = "Oceny czołgów"
 
