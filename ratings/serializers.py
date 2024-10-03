@@ -1,8 +1,39 @@
 from rest_framework import serializers
-from ratings.models import Rating
+from accounts.serializers import UserSerializer
+from ratings.models import Rating, Comment
+from tanks.models import Tank
+from tanks.serializers import TankSerializer, TankBaseSerializer
 
 
-class RatingSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('text', 'created_at', 'updated_at')
+
+
+class RatingListSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+    tank = TankBaseSerializer(read_only=True)
+    comment = CommentSerializer(read_only=True)
+
     class Meta:
         model = Rating
-        fields = ('author', 'tank', 'comment', 'gun_rating', 'mobility_rating', 'detection_rating', 'armor_rating', 'cammo_rating', 'overall_rating')
+        fields = '__all__'
+
+
+class RatingCreateSerializer(serializers.ModelSerializer):
+    tank = serializers.PrimaryKeyRelatedField(queryset=Tank.objects.all())
+    comment = CommentSerializer(required=False)
+
+    class Meta:
+        model = Rating
+        exclude = ('author',)
+
+    def create(self, validated_data):
+        comment_data = validated_data.pop('comment', None)
+        rating = Rating.objects.create(**validated_data)
+        if comment_data:
+            comment = Comment.objects.create(**comment_data)
+            rating.comment = comment
+            rating.save()
+        return rating
