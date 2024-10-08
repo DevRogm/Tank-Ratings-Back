@@ -1,7 +1,11 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework import status
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView, RetrieveAPIView
+from rest_framework.response import Response
+from django.db import models
+from tanks.models import Tank
 from .filters import RatingFilter
-from .models import Rating
+from .models import Rating, Comment, AvgRating
 from .serializers import RatingListSerializer, RatingCreateSerializer
 
 
@@ -9,10 +13,12 @@ from .serializers import RatingListSerializer, RatingCreateSerializer
 class RatingBase:
     queryset = Rating.objects.all()
 
+
 class RatingListApiView(RatingBase, ListAPIView):
     serializer_class = RatingListSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = RatingFilter
+
 
 class RatingCreateApiView(RatingBase, CreateAPIView):
     serializer_class = RatingCreateSerializer
@@ -20,12 +26,41 @@ class RatingCreateApiView(RatingBase, CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    # TODO: dodać endpoint pod komentarze zeby wszystkie ogarnac
-    # TODO: ogarnac permission, ogarnac filtrowanie
-    # chciałbym widzieć listę komentarzy dla danego czołgu
-    # średnie oceny dla czołgu
-    # komentarze maja byc widoczne od najswiezszego do najstarszego w szczegółach czołgu
-    # dodać create i retrieve dla ocen
-    # później zmienic to na list ocen zalogowanego uzytkownika
-    # ale w sumie list ocen przyda sie do wyswietlania ostatnich 10 ocen na stronie głównej
-    # podczas dodawania ocen dla czołgu powinno byc utworzone AvgRating i wyliczane.
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        tank = Tank.objects.get(id=self.request.data["tank"])
+        all_tank_ratings = tank.rating_tank.all()
+        rating_fields_name = [field.name for field in Rating._meta.get_fields() if "rating" in field.name]
+        avg_ratings = {f'avg_{rating}' : all_tank_ratings.aggregate(models.Avg(rating))[f'{rating}__avg'] for rating in rating_fields_name}
+
+        AvgRating.objects.update_or_create(**avg_ratings, tank=tank)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class RatingUpdateApiView(RatingBase, UpdateAPIView):
+    serializer_class = RatingCreateSerializer
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+
+class RatingDeleteApiView(RatingBase, DestroyAPIView):
+
+    def delete(self, request, *args, **kwargs):
+        rating = self.get_object()
+        self.perform_destroy(rating)
+        if rating.comment:
+            rating.comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RatingDetailsApiView(RatingBase, RetrieveAPIView):
+    serializer_class = RatingListSerializer
+
+
+class CommentDeleteApiView(DestroyAPIView):
+    queryset = Comment.objects.all()

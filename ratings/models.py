@@ -25,7 +25,7 @@ class Comment(models.Model):
 class Rating(models.Model):
     author = models.ForeignKey(User, verbose_name="Autor oceny", on_delete=models.CASCADE,
                                   related_name="rating_author")
-    comment = models.OneToOneField(Comment, verbose_name="Komentarz", on_delete=models.CASCADE, null=True, blank=True,
+    comment = models.OneToOneField(Comment, verbose_name="Komentarz",on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name="rating_comment")
     tank = models.ForeignKey(Tank, verbose_name="Czołg", on_delete=models.CASCADE, related_name="rating_tank")
     gun_rating = models.PositiveSmallIntegerField(verbose_name="Ocena działa", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])

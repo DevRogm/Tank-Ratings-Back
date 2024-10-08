@@ -46,3 +46,16 @@ class RatingCreateSerializer(serializers.ModelSerializer):
             rating.comment = comment
             rating.save()
         return rating
+
+    def update(self, instance, validated_data):
+        comment_data = validated_data.pop('comment', None)
+        if comment_data:
+            if instance.comment:
+                comment_instance = instance.comment
+                comment_instance.text = comment_data.get('text', comment_instance.text)
+                comment_instance.save()
+            else:
+                comment = Comment.objects.create(**comment_data)
+                instance.comment = comment
+                instance.save()
+        return instance

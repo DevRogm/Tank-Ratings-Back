@@ -2,14 +2,14 @@ from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy as _
 
 class Tier(TextChoices):
-    III = "III", _("III")
-    IV = "IV", _("IV")
-    V = "V", _("V")
-    VI = "VI", _("VI")
-    VII = "VII", _("VII")
-    VIII = "VIII", _("VIII")
-    IX = "IX", _("IX")
-    X = "X", _("X")
+    III = "III", "III"
+    IV = "IV", "IV"
+    V = "V", "V"
+    VI = "VI", "VI"
+    VII = "VII", "VII"
+    VIII = "VIII", "VIII"
+    IX = "IX", "IX"
+    X = "X", "X"
 
 class Type(TextChoices):
     light_tank = "Czołg lekki", _("Czołg lekki")
