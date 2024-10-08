@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+
 from accounts.serializers import UserSerializer
 from ratings.models import Rating, Comment
 from tanks.models import Tank
@@ -28,6 +30,13 @@ class RatingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         exclude = ('author',)
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+
+        if Rating.objects.filter(tank=attrs.get('tank'), author=request.user).exists():
+            raise serializers.ValidationError("Już oceniłeś ten czołg.")
+        return attrs
 
     def create(self, validated_data):
         comment_data = validated_data.pop('comment', None)
