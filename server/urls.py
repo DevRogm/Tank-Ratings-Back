@@ -32,4 +32,5 @@ urlpatterns = [
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('tanks/', include("tanks.urls", namespace="tanks")),
     path('ratings/', include("ratings.urls", namespace="ratings")),
+    path('news/', include("news.urls", namespace="news")),
 ]
