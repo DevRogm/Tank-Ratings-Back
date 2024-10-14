@@ -1,4 +1,6 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+
+from .filters import TankFilter
 from .models import Tank
 from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import TankSerializer
@@ -11,9 +13,7 @@ class TankBaseApiView:
 
 class TankListApiView(TankBaseApiView, ListAPIView):
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['nation', 'name', 'tier', 'type', 'is_premium']
+    filterset_class = TankFilter
 
 class TankDetailsApiView(TankBaseApiView, RetrieveAPIView):
     pass
-
-#TODO: dodać tutaj pole z AvgRating i z listą komentarzy

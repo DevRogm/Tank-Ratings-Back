@@ -46,12 +46,12 @@ class Rating(models.Model):
 
 class AvgRating(models.Model):
     tank = models.OneToOneField(Tank, verbose_name="Czołg", on_delete=models.CASCADE, related_name="avg_rating_tank")
-    avg_gun_rating = models.DecimalField(verbose_name="Ocena działa", max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_mobility_rating = models.DecimalField(verbose_name="Ocena mobilności", max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_detection_rating = models.DecimalField(verbose_name="Ocena wykrywania", max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_armor_rating = models.DecimalField(verbose_name="Ocena pancerza", max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_cammo_rating = models.DecimalField(verbose_name="Ocena kamuflarzu", max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_overall_rating = models.DecimalField(verbose_name="Ocena ogólna", max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    avg_gun_rating = models.DecimalField(verbose_name="Ocena działa", choices=RatingRange, max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    avg_mobility_rating = models.DecimalField(verbose_name="Ocena mobilności", choices=RatingRange, max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    avg_detection_rating = models.DecimalField(verbose_name="Ocena wykrywania", choices=RatingRange, max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    avg_armor_rating = models.DecimalField(verbose_name="Ocena pancerza", choices=RatingRange, max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    avg_cammo_rating = models.DecimalField(verbose_name="Ocena kamuflarzu", choices=RatingRange, max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    avg_overall_rating = models.DecimalField(verbose_name="Ocena ogólna", choices=RatingRange, max_digits=2, decimal_places=1, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
 
     class Meta:
         verbose_name = "Średnia ocena czołgu"

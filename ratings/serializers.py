@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 
 from accounts.serializers import UserSerializer
 from ratings.models import Rating, Comment
