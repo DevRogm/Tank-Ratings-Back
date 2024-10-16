@@ -17,3 +17,12 @@ class TankListApiView(TankBaseApiView, ListAPIView):
 
 class TankDetailsApiView(TankBaseApiView, RetrieveAPIView):
     pass
+
+class TankTop10ApiView(TankBaseApiView, ListAPIView):
+    queryset = Tank.objects.filter(avg_rating_tank__isnull=False).order_by('-avg_rating_tank__avg_overall_rating')[:10]
+
+class TankAvailableApiView(TankBaseApiView, ListAPIView):
+    pass
+    #TODO: This should display a list of available tanks for the player to rate
+    # This can be completed when WotClient is developed
+    # A player can rate tanks if he has played more than 50 battles on them

@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
 from accounts.serializers import UserSerializer
-from ratings.models import Rating, Comment
+from ratings.models import Rating, Comment, AvgRating
 from tanks.models import Tank
 from tanks.serializers import TankSerializer, TankBaseSerializer
-
+from django.db import models
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,18 +28,20 @@ class RatingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Rating
-        exclude = ('author',)
+        exclude = ('author', 'overall_rating')
 
     def validate(self, attrs):
         request = self.context.get('request')
-
         if Rating.objects.filter(tank=attrs.get('tank'), author=request.user).exists():
             raise serializers.ValidationError("Już oceniłeś ten czołg.")
         return attrs
 
     def create(self, validated_data):
         comment_data = validated_data.pop('comment', None)
-        rating = Rating.objects.create(**validated_data)
+        list_of_rating = [value for key, value in validated_data.items() if 'overall' not in key and 'rating' in key]
+        overall_rating = sum(list_of_rating) / len(list_of_rating)
+        rating = Rating.objects.create(**validated_data, overall_rating=overall_rating)
+        rating.save()
         if comment_data:
             comment = Comment.objects.create(**comment_data)
             rating.comment = comment
@@ -57,4 +59,20 @@ class RatingCreateSerializer(serializers.ModelSerializer):
                 comment = Comment.objects.create(**comment_data)
                 instance.comment = comment
                 instance.save()
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        list_of_rating = [value for key, value in validated_data.items() if 'overall' not in key and 'rating' in key]
+        overall_rating = sum(list_of_rating) / len(list_of_rating)
+        instance.overall_rating = overall_rating
+        instance.save()
+
+        #update avg_rating for the tank
+        avg_rating = AvgRating.objects.filter(tank=instance.tank)
+        if avg_rating:
+            tank = Tank.objects.get(id=instance.tank.id)
+            all_tank_ratings = tank.rating_tank.all()
+            rating_fields_name = [field.name for field in Rating._meta.get_fields() if "rating" in field.name]
+            avg_ratings = {f'avg_{rating}': all_tank_ratings.aggregate(models.Avg(rating))[f'{rating}__avg'] for rating in
+                           rating_fields_name}
+            avg_rating.update(**avg_ratings)
         return instance

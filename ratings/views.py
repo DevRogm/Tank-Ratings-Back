@@ -32,12 +32,13 @@ class RatingCreateApiView(RatingBase, CreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
+        # create or update avg rating for the tank
         tank = Tank.objects.get(id=self.request.data["tank"])
         all_tank_ratings = tank.rating_tank.all()
         rating_fields_name = [field.name for field in Rating._meta.get_fields() if "rating" in field.name]
         avg_ratings = {f'avg_{rating}' : all_tank_ratings.aggregate(models.Avg(rating))[f'{rating}__avg'] for rating in rating_fields_name}
+        AvgRating.objects.update_or_create(tank=tank, defaults=avg_ratings)
 
-        AvgRating.objects.update_or_create(**avg_ratings, tank=tank)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
