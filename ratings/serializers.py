@@ -4,7 +4,8 @@ from accounts.serializers import UserSerializer
 from ratings.models import Rating, Comment, AvgRating
 from tanks.models import Tank
 from tanks.serializers import TankSerializer, TankBaseSerializer
-from django.db import models
+from django.db import models, transaction
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,42 +38,51 @@ class RatingCreateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        comment_data = validated_data.pop('comment', None)
-        list_of_rating = [value for key, value in validated_data.items() if 'overall' not in key and 'rating' in key]
-        overall_rating = sum(list_of_rating) / len(list_of_rating)
-        rating = Rating.objects.create(**validated_data, overall_rating=overall_rating)
-        rating.save()
-        if comment_data:
-            comment = Comment.objects.create(**comment_data)
-            rating.comment = comment
+        try:
+            comment_data = validated_data.pop('comment', None)
+            list_of_rating = [value for key, value in validated_data.items() if 'overall' not in key and 'rating' in key]
+            overall_rating = sum(list_of_rating) / len(list_of_rating)
+            rating = Rating.objects.create(**validated_data, overall_rating=overall_rating)
             rating.save()
-        return rating
+            if comment_data:
+                comment = Comment.objects.create(**comment_data)
+                rating.comment = comment
+                rating.save()
+            return rating
+        except Exception as e:
+            print(str(e))
+            raise serializers.ValidationError({"detail": "Wystąpił błąd podczas tworzenia oceny"})
 
     def update(self, instance, validated_data):
-        comment_data = validated_data.pop('comment', None)
-        if comment_data:
-            if instance.comment:
-                comment_instance = instance.comment
-                comment_instance.text = comment_data.get('text', comment_instance.text)
-                comment_instance.save()
-            else:
-                comment = Comment.objects.create(**comment_data)
-                instance.comment = comment
+        try:
+            with transaction.atomic():
+                comment_data = validated_data.pop('comment', None)
+                if comment_data:
+                    if instance.comment:
+                        comment_instance = instance.comment
+                        comment_instance.text = comment_data.get('text', comment_instance.text)
+                        comment_instance.save()
+                    else:
+                        comment = Comment.objects.create(**comment_data)
+                        instance.comment = comment
+                        instance.save()
+                for attr, value in validated_data.items():
+                    setattr(instance, attr, value)
+                list_of_rating = [value for key, value in validated_data.items() if 'overall' not in key and 'rating' in key]
+                overall_rating = sum(list_of_rating) / len(list_of_rating)
+                instance.overall_rating = overall_rating
                 instance.save()
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        list_of_rating = [value for key, value in validated_data.items() if 'overall' not in key and 'rating' in key]
-        overall_rating = sum(list_of_rating) / len(list_of_rating)
-        instance.overall_rating = overall_rating
-        instance.save()
 
-        #update avg_rating for the tank
-        avg_rating = AvgRating.objects.filter(tank=instance.tank)
-        if avg_rating:
-            tank = Tank.objects.get(id=instance.tank.id)
-            all_tank_ratings = tank.rating_tank.all()
-            rating_fields_name = [field.name for field in Rating._meta.get_fields() if "rating" in field.name]
-            avg_ratings = {f'avg_{rating}': all_tank_ratings.aggregate(models.Avg(rating))[f'{rating}__avg'] for rating in
-                           rating_fields_name}
-            avg_rating.update(**avg_ratings)
-        return instance
+                # Update avg_rating for the tank
+                avg_rating = AvgRating.objects.filter(tank=instance.tank)
+                if avg_rating:
+                    tank = Tank.objects.get(id=instance.tank.id)
+                    all_tank_ratings = tank.rating_tank.all()
+                    rating_fields_name = [field.name for field in Rating._meta.get_fields() if "rating" in field.name]
+                    avg_ratings = {f'avg_{rating}': all_tank_ratings.aggregate(models.Avg(rating))[f'{rating}__avg'] for rating in
+                                   rating_fields_name}
+                    avg_rating.update(**avg_ratings)
+                return instance
+        except Exception as e:
+            print({str(e)})
+            raise serializers.ValidationError({"detail": "Wystąpił błąd podczas aktualizacji oceny"})

@@ -1,6 +1,6 @@
 from django.urls import path
 from ratings.views import RatingListApiView, RatingCreateApiView, RatingUpdateApiView, RatingDeleteApiView, \
-    RatingDetailsApiView, CommentDeleteApiView
+    RatingDetailsApiView
 
 app_name = "ratings"
 
