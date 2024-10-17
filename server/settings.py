@@ -20,8 +20,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9itv8a4*gm@=v8975pwdef_+w18ww*m)=a52olvnblhue&%)06'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -42,7 +40,8 @@ INSTALLED_APPS = [
     'django_filters',
     'tanks',
     'ratings',
-    'news'
+    'news',
+    'wot_client',
 ]
 
 MIDDLEWARE = [
