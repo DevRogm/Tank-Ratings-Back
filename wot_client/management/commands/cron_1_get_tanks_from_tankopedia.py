@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 
+from tanks.services import TankService
 from wot_client.services import WotClient
 
 
@@ -25,8 +26,10 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         try:
             wot_client = WotClient()
+            tank_service = TankService()
             json_data = wot_client.get_tanks_from_tankopedia(tier=kwargs['tier'], fields=kwargs['fields'],
                                                              limit=kwargs.get('limit'))
+            tank_service.save_tanks_to_db(json_data)
         except Exception as error:
             self.stdout.write(self.style.ERROR(f"Error message: {error}"))
             self.stdout.write(self.style.ERROR('Vehicle data updated failed'))
