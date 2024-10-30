@@ -12,7 +12,7 @@ class WotPlayer(models.Model):
     tank_to_activate = models.IntegerField(verbose_name="Id czołgu do aktywacji konta", null=True, blank=True)
     time_to_activate = models.DateTimeField(verbose_name="Czas na aktywacje", null=True, blank=True)
     activated_at = models.DateTimeField(verbose_name="Data aktywacji", null=True, blank=True)
-    available_tanks = models.ManyToManyField(Tank, verbose_name="Dostepne czołgi do oceniania", null=True, blank=True)
+    available_tanks = models.ManyToManyField(Tank, verbose_name="Dostepne czołgi do oceniania", blank=True)
 
     class Meta:
         verbose_name = "Konto WoT użytkownika"
