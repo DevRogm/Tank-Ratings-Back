@@ -33,7 +33,7 @@ class Rating(models.Model):
     detection_rating = models.PositiveSmallIntegerField(verbose_name="Ocena wykrywania", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
     armor_rating = models.PositiveSmallIntegerField(verbose_name="Ocena pancerza", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
     cammo_rating = models.PositiveSmallIntegerField(verbose_name="Ocena kamuflarzu", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    overall_rating = models.DecimalField(verbose_name="Ocena ogólna", max_digits=2, decimal_places=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    overall_rating = models.DecimalField(verbose_name="Ocena ogólna", max_digits=2, decimal_places=1)
 
     class Meta:
         unique_together = ('author', 'tank')
@@ -46,12 +46,12 @@ class Rating(models.Model):
 
 class AvgRating(models.Model):
     tank = models.OneToOneField(Tank, verbose_name="Czołg", on_delete=models.CASCADE, related_name="avg_rating_tank")
-    avg_gun_rating = models.DecimalField(verbose_name="Średnia ocena działa", max_digits=2, decimal_places=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_mobility_rating = models.DecimalField(verbose_name="Średnia ocena mobilności", max_digits=2, decimal_places=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_detection_rating = models.DecimalField(verbose_name="Średnia ocena wykrywania", max_digits=2, decimal_places=1,  validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_armor_rating = models.DecimalField(verbose_name="Średnia ocena pancerza", max_digits=2, decimal_places=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_cammo_rating = models.DecimalField(verbose_name="Średnia ocena kamuflarzu", max_digits=2, decimal_places=1,  validators=[MinValueValidator(1), MaxValueValidator(6)])
-    avg_overall_rating = models.DecimalField(verbose_name="Średnia ocena ogólna", max_digits=2, decimal_places=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    avg_gun_rating = models.DecimalField(verbose_name="Średnia ocena działa", max_digits=2, decimal_places=1)
+    avg_mobility_rating = models.DecimalField(verbose_name="Średnia ocena mobilności", max_digits=2, decimal_places=1)
+    avg_detection_rating = models.DecimalField(verbose_name="Średnia ocena wykrywania", max_digits=2, decimal_places=1)
+    avg_armor_rating = models.DecimalField(verbose_name="Średnia ocena pancerza", max_digits=2, decimal_places=1)
+    avg_cammo_rating = models.DecimalField(verbose_name="Średnia ocena kamuflarzu", max_digits=2, decimal_places=1)
+    avg_overall_rating = models.DecimalField(verbose_name="Średnia ocena ogólna", max_digits=2, decimal_places=1)
 
     class Meta:
         verbose_name = "Średnia ocena czołgu"

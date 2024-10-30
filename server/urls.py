@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from server import settings
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -34,3 +35,9 @@ urlpatterns = [
     path('ratings/', include("ratings.urls", namespace="ratings")),
     path('news/', include("news.urls", namespace="news")),
 ]
+
+# if settings.DEBUG:
+#     import debug_toolbar
+#     urlpatterns = [
+#         path(r'__debug__/', include(debug_toolbar.urls)),
+#     ] + urlpatterns
