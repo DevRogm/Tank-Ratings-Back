@@ -4,7 +4,9 @@ from .models import Tank
 
 
 class TankService:
-    def save_tanks_to_db(self, tanks_data):
+
+    @staticmethod
+    def save_tanks_to_db(tanks_data):
         """
         Method saves tanks from API to db
         :param tanks_data:
@@ -32,5 +34,3 @@ class TankService:
         except Exception as error:
             print(f"save_tanks_to_db error: {error}")
             raise Exception(error)
-
-        # short_name, name, nation, is_premium, tier, era, tank_id, type, images
