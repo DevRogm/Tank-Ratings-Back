@@ -12,7 +12,7 @@ from .serializers import TankSerializer
 
 # Create your views here.
 class TankBaseApiView:
-    queryset = Tank.objects.all()
+    queryset = Tank.objects.select_related('avg_rating_tank').prefetch_related('rating_tank__comment').all()
     serializer_class = TankSerializer
     permission_classes = [AllowAny]
 
@@ -27,7 +27,8 @@ class TankDetailsApiView(TankBaseApiView, RetrieveAPIView):
 
 
 class TankTop10ApiView(TankBaseApiView, ListAPIView):
-    queryset = Tank.objects.filter(avg_rating_tank__isnull=False).order_by('-avg_rating_tank__avg_overall_rating')[:10]
+    queryset = Tank.objects.filter(avg_rating_tank__isnull=False).select_related('avg_rating_tank').prefetch_related(
+        'rating_tank__comment').order_by('-avg_rating_tank__avg_overall_rating')[:10]
 
 
 class TankAvailableApiView(TankBaseApiView, ListAPIView):
@@ -37,7 +38,8 @@ class TankAvailableApiView(TankBaseApiView, ListAPIView):
         queryset = self.queryset
         if isinstance(queryset, QuerySet):
             try:
-                queryset = self.request.user.wot_player.available_tanks.all()
+                queryset = self.request.user.wot_player.available_tanks.select_related(
+                    'avg_rating_tank').prefetch_related('rating_tank').all()
             except Exception:
                 return queryset
         return queryset

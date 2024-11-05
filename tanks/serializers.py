@@ -8,6 +8,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('text', 'created_at', 'updated_at')
 
+
 class AvgRatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvgRating
@@ -19,6 +20,7 @@ class AvgRatingSerializer(serializers.ModelSerializer):
             'avg_cammo_rating',
             'avg_overall_rating'
         ]
+
 
 class TankBaseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,6 +40,5 @@ class TankSerializer(TankBaseSerializer):
 
     @staticmethod
     def get_comments(obj):
-        comments = Comment.objects.filter(rating_comment__tank=obj)
+        comments = [rating.comment for rating in obj.rating_tank.all() if rating.comment is not None]
         return CommentSerializer(comments, many=True).data
-
