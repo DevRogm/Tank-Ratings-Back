@@ -18,7 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from server import settings
+from debug_toolbar.toolbar import debug_toolbar_urls
+from rest_framework import permissions
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -26,18 +31,16 @@ schema_view = get_schema_view(
       default_version='v1',
    ),
    public=True,
+   permission_classes=[permissions.AllowAny]
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('login/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('tanks/', include("tanks.urls", namespace="tanks")),
+    path('accounts/', include("accounts.urls", namespace="accounts")),
     path('ratings/', include("ratings.urls", namespace="ratings")),
     path('news/', include("news.urls", namespace="news")),
-]
-
-# if settings.DEBUG:
-#     import debug_toolbar
-#     urlpatterns = [
-#         path(r'__debug__/', include(debug_toolbar.urls)),
-#     ] + urlpatterns
+] + debug_toolbar_urls()

@@ -24,15 +24,20 @@ class Comment(models.Model):
 
 class Rating(models.Model):
     author = models.ForeignKey(User, verbose_name="Autor oceny", on_delete=models.CASCADE,
-                                  related_name="rating_author")
-    comment = models.OneToOneField(Comment, verbose_name="Komentarz",on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name="rating_author")
+    comment = models.OneToOneField(Comment, verbose_name="Komentarz", on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name="rating_comment")
     tank = models.ForeignKey(Tank, verbose_name="Czołg", on_delete=models.CASCADE, related_name="rating_tank")
-    gun_rating = models.PositiveSmallIntegerField(verbose_name="Ocena działa", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    mobility_rating = models.PositiveSmallIntegerField(verbose_name="Ocena mobilności", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    detection_rating = models.PositiveSmallIntegerField(verbose_name="Ocena wykrywania", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    armor_rating = models.PositiveSmallIntegerField(verbose_name="Ocena pancerza", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
-    cammo_rating = models.PositiveSmallIntegerField(verbose_name="Ocena kamuflarzu", choices=RatingRange, default=1, validators=[MinValueValidator(1), MaxValueValidator(6)])
+    gun_rating = models.PositiveSmallIntegerField(verbose_name="Ocena działa", choices=RatingRange, default=1,
+                                                  validators=[MinValueValidator(1), MaxValueValidator(6)])
+    mobility_rating = models.PositiveSmallIntegerField(verbose_name="Ocena mobilności", choices=RatingRange, default=1,
+                                                       validators=[MinValueValidator(1), MaxValueValidator(6)])
+    detection_rating = models.PositiveSmallIntegerField(verbose_name="Ocena wykrywania", choices=RatingRange, default=1,
+                                                        validators=[MinValueValidator(1), MaxValueValidator(6)])
+    armor_rating = models.PositiveSmallIntegerField(verbose_name="Ocena pancerza", choices=RatingRange, default=1,
+                                                    validators=[MinValueValidator(1), MaxValueValidator(6)])
+    cammo_rating = models.PositiveSmallIntegerField(verbose_name="Ocena kamuflarzu", choices=RatingRange, default=1,
+                                                    validators=[MinValueValidator(1), MaxValueValidator(6)])
     overall_rating = models.DecimalField(verbose_name="Ocena ogólna", max_digits=2, decimal_places=1)
 
     class Meta:
@@ -51,7 +56,8 @@ class AvgRating(models.Model):
     avg_detection_rating = models.DecimalField(verbose_name="Średnia ocena wykrywania", max_digits=2, decimal_places=1)
     avg_armor_rating = models.DecimalField(verbose_name="Średnia ocena pancerza", max_digits=2, decimal_places=1)
     avg_cammo_rating = models.DecimalField(verbose_name="Średnia ocena kamuflarzu", max_digits=2, decimal_places=1)
-    avg_overall_rating = models.DecimalField(verbose_name="Średnia ocena ogólna", max_digits=2, decimal_places=1)
+    avg_overall_rating = models.DecimalField(verbose_name="Średnia ocena ogólna", max_digits=2, decimal_places=1,
+                                             db_index=True)
 
     class Meta:
         verbose_name = "Średnia ocena czołgu"

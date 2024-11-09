@@ -14,7 +14,7 @@ from .serializers import RatingListSerializer, RatingCreateSerializer
 
 # Create your views here.
 class RatingBase:
-    queryset = Rating.objects.all()
+    queryset = Rating.objects.select_related('author', 'comment', 'tank').all()
     permission_classes = [IsAuthenticated]
 
 
@@ -43,7 +43,8 @@ class RatingCreateApiView(RatingBase, CreateAPIView):
                 tank = Tank.objects.get(id=self.request.data["tank"])
                 all_tank_ratings = tank.rating_tank.all()
                 rating_fields_name = [field.name for field in Rating._meta.get_fields() if "rating" in field.name]
-                avg_ratings = {f'avg_{rating}' : all_tank_ratings.aggregate(models.Avg(rating))[f'{rating}__avg'] for rating in rating_fields_name}
+                avg_ratings = {f'avg_{rating}': all_tank_ratings.aggregate(models.Avg(rating))[f'{rating}__avg'] for
+                               rating in rating_fields_name}
                 AvgRating.objects.update_or_create(tank=tank, defaults=avg_ratings)
         except Exception as e:
             return Response({"error": "Wystąpił błąd podczas tworzenia oceny"},
