@@ -1,3 +1,5 @@
+import random
+
 from tanks.models import Tank
 from .models import WotPlayer
 
@@ -13,6 +15,16 @@ class AccountService:
         except Exception as error:
             print(f"save_tank_with_min_battles error: {error}")
             raise Exception(error)
+
+    @staticmethod
+    def draw_tank_to_active_account(tier):
+        tanks = Tank.objects.filter(tier=tier)
+        try:
+            drawn_tank = random.choice(tanks)
+        except Exception as error:
+            print(f"draw_tank_to_active_account: {error}")
+            drawn_tank = None
+        return drawn_tank
 
     @staticmethod
     def _get_tanks_by_min_battles(tanks_data, num_of_battles, wot_account_id):
