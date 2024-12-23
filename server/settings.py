@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from .local_settings import *
-
+from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django_filters',
     'debug_toolbar',
     'rest_framework_simplejwt',
+    'django_celery_beat',
     'tanks',
     'ratings',
     'news',
@@ -120,6 +121,7 @@ REST_FRAMEWORK = {
     # ),
 }
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -132,6 +134,9 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Celery Configuration Options
+CELERY_TIMEZONE = TIME_ZONE
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
@@ -141,3 +146,21 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+CELERY_BEAT_SCHEDULE = {
+    'weekly-update-tank-db': {
+        'task': 'wot_client.tasks.update_tanks_db',
+        'schedule': crontab(hour='13', minute='0', day_of_week='2'),
+    },
+    'check-can-activate-account-every-minute': {
+        'task': 'accounts.tasks.activate_account',
+        'schedule': crontab(minute='*'),
+    },
+    'update-players-tank-db-every-10-min': {
+        'task': 'accounts.tasks.update_players_tank',
+        'schedule': crontab(minute='*/10'),
+    },
+}
