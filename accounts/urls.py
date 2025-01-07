@@ -11,5 +11,4 @@ urlpatterns = [
     path('activate/create/', ActiveAccountCreateView.as_view(), name='activate_account_create'),
     path('activate/get/<int:pk>/', ActiveAccountRetrieveView.as_view(), name='activate_account_get'),
     path('activate/delete/<int:pk>/', ActiveAccountDeleteView.as_view(), name='activate_account_delete'),
-
 ]

@@ -31,6 +31,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data.get('password') != data.get('password2'):
             raise serializers.ValidationError({"password": "Hasła nie są takie same"})
+        if data.get('username') in data.get('password'):
+            raise serializers.ValidationError({"password": "Hasło jest zbyt podobne do nazwy użytkownika"})
         return data
 
     @staticmethod
