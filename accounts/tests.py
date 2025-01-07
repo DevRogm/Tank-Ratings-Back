@@ -5,19 +5,38 @@ from django.contrib.auth.models import User
 
 """
 TEST CASES:
+
+=== Registration ===
 - test_user_registration_with_correct_data
 - test_user_registration_with_password_mismatch
 - test_user_registration_with_too_short_password
 - test_user_registration_with_too_common_password
 - test_user_registration_with_password_similar_to_username
 - test_user_registration_with_duplicate_username
+- test_user_registration_without_username
+
+=== Login ===
+- test_login_with_valid_credentials
+- test_login_with_invalid_credentials
+- test_protected_view_with_valid_token
+- test_protected_view_with_invalid_token
+
+=== Activate === need to use mock
+- test_check_if_wot_player_exist_with_valid_credentials
+- test_check_if_wot_player_exist_with_invalid_credentials
+- test_draw_the_tank
+- test_create_activate_account_first_time
+- test_create_activate_account_duplicate
+- test_can_activate_account
 """
 
 URL_REGISTER = '/accounts/register/'
 
+
 @pytest.fixture
 def api_client():
     return APIClient()
+
 
 @pytest.mark.django_db
 def test_user_registration_with_correct_data(api_client):
@@ -35,6 +54,7 @@ def test_user_registration_with_correct_data(api_client):
     assert user.email == payload['email']
     assert user.check_password(payload['password'])
     assert user.check_password(payload['password2'])
+
 
 @pytest.mark.django_db
 def test_user_registration_with_password_mismatch(api_client):
@@ -115,3 +135,16 @@ def test_user_registration_with_duplicate_username(api_client):
     assert response_2.status_code == status.HTTP_400_BAD_REQUEST
     assert "username" in response_2.data
     assert response_2.data["username"] == ["Użytkownik o tej nazwie już istnieje."]
+
+
+@pytest.mark.django_db
+def test_user_registration_without_username(api_client):
+    payload = {
+        "email": "testuser@example.com",
+        "password": "testuser",
+        "password2": "testuser"
+    }
+    response = api_client.post(URL_REGISTER, payload)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "username" in response.data
+    assert response.data["username"] == ["To pole jest wymagane."]
