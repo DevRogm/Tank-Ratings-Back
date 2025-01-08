@@ -2,24 +2,27 @@ import pytest
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from accounts.constants import URL_REGISTER, URL_LOGIN, URL_REFRESH
 
 """
 TEST CASES:
 
 === Registration ===
-- test_user_registration_with_correct_data
-- test_user_registration_with_password_mismatch
-- test_user_registration_with_too_short_password
-- test_user_registration_with_too_common_password
-- test_user_registration_with_password_similar_to_username
-- test_user_registration_with_duplicate_username
-- test_user_registration_without_username
+- test_user_registration_with_correct_data                      V
+- test_user_registration_with_password_mismatch                 V
+- test_user_registration_with_too_short_password                V
+- test_user_registration_with_too_common_password               V
+- test_user_registration_with_password_similar_to_username      V
+- test_user_registration_with_duplicate_username                V
+- test_user_registration_without_username                       V
 
 === Login ===
-- test_login_with_valid_credentials
-- test_login_with_invalid_credentials
-- test_protected_view_with_valid_token
-- test_protected_view_with_invalid_token
+- test_login_with_valid_credentials                             V
+- test_login_with_invalid_credentials                           V            
+- test_refresh_token                                            V
+- test_refresh_token_with_invalid_token                         V
 
 === Activate === need to use mock
 - test_check_if_wot_player_exist_with_valid_credentials
@@ -29,8 +32,6 @@ TEST CASES:
 - test_create_activate_account_duplicate
 - test_can_activate_account
 """
-
-URL_REGISTER = '/accounts/register/'
 
 
 @pytest.fixture
@@ -148,3 +149,59 @@ def test_user_registration_without_username(api_client):
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "username" in response.data
     assert response.data["username"] == ["To pole jest wymagane."]
+
+
+@pytest.fixture
+def create_test_user():
+    user = User.objects.create_user(
+        username="testuser",
+        email="testuser@example.com",
+        password="StrongPassword123!"
+    )
+    return user
+
+
+@pytest.mark.django_db
+def test_login_with_valid_credentials(api_client, create_test_user):
+    payload = {
+        "username": "testuser",
+        "password": "StrongPassword123!"
+    }
+    response = api_client.post(URL_LOGIN, payload)
+    assert response.status_code == status.HTTP_200_OK
+    assert "access" in response.data
+    assert "refresh" in response.data
+
+
+@pytest.mark.django_db
+def test_login_with_invalid_credentials(api_client, create_test_user):
+    payload = {
+        "username": "testuser",
+        "password": "WrongPassword458!"
+    }
+    response = api_client.post(URL_LOGIN, payload)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "access" not in response.data
+    assert "refresh" not in response.data
+
+
+@pytest.mark.django_db
+def test_refresh_token(api_client, create_test_user):
+    refresh = RefreshToken.for_user(create_test_user)
+    payload = {
+        "refresh": str(refresh)
+    }
+    response = api_client.post(URL_REFRESH, payload)
+    assert response.status_code == status.HTTP_200_OK
+    assert "access" in response.data
+
+
+@pytest.mark.django_db
+def test_refresh_token_with_invalid_token(api_client):
+    payload = {
+        "refresh": "invalid_token"
+    }
+    response = api_client.post(URL_REFRESH, payload)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "access" not in response.data
