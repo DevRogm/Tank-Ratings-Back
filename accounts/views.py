@@ -7,6 +7,7 @@ from .models import ActivateAccount
 from .serializers import RegisterSerializer, ActivateAccountSerializer
 from django.contrib.auth.models import User
 
+
 class RegistrationView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -22,6 +23,7 @@ class ActiveAccountCreateView(CreateAPIView):
         context = super().get_serializer_context()
         context['user'] = self.request.user
         return context
+
 
 class ActiveAccountRetrieveView(RetrieveAPIView):
     queryset = ActivateAccount.objects.all()
